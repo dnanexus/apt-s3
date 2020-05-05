@@ -822,7 +822,7 @@ void HttpMethod::SendReq(FetchItem *Itm,CircleBuf &Out)
 }
 
 void doEncrypt(char *kString, char *sigString, const char* secretKey){
-	HMAC_CTX hctx;
+	HMAC_CTX *hctx = HMAC_CTX_new();
 	BIO *bio, *b64;
 	char *sigptr;
 	long siglen = -1;
@@ -832,8 +832,7 @@ void doEncrypt(char *kString, char *sigString, const char* secretKey){
 
 	// Initialize SHA1 encryption
 	sprintf(skey, "%s", secretKey);
-	HMAC_CTX_init(&hctx);
-	HMAC_Init(&hctx, skey, (int)strlen((char *)skey), EVP_sha1());
+        HMAC_Init_ex(hctx, skey, (int)strlen((char *)skey), EVP_sha1(), NULL);
 
 	// Encrypt
 	HMAC(EVP_sha1(), skey, (int)strlen((char *)skey), (unsigned char *)kString,
@@ -853,7 +852,7 @@ void doEncrypt(char *kString, char *sigString, const char* secretKey){
 
 	// Clean up Encryption, Encoding
 	BIO_free_all(bio);
-	HMAC_CTX_cleanup(&hctx);
+	HMAC_CTX_free(hctx);
 }
 									/*}}}*/
 // HttpMethod::Go - Run a single loop					/*{{{*/
